@@ -1,0 +1,1 @@
+A web app to help people combine Spotify playlists with their friends. Built out using HTML, CSS, JS, Spotify API, Python, Flask and Heroku. Planning to add functionality for more users, as well as a mobile application. 
