@@ -40,32 +40,32 @@
         <div class="col-lg-8 mx-auto">
           <h2>Let's make a playlist!</h2>
           <p class="lead">Input some Spotify information to create your playlist.</p>
-          <form method="post">
+          <form action= "{{ url_for('get_info') }}" method="post">
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="basic-addon3">Name of New Playlist</span>
                 </div>
-                <input type="text" class="form-control" id="new-playlist" aria-describedby="basic-addon3">
+                <input type="text" class="form-control" name="new-playlist" aria-describedby="basic-addon3">
             </div>
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="basic-addon3">Your Spotify Username</span>
                 </div>
-                <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+                <input type="text" class="form-control" name="spotify-username" aria-describedby="basic-addon3">
             </div>
             <div class="input-group">
                 <div class="input-group-prepend">
                   <span class="input-group-text">Spotify Usernames of 2 Guests</span>
                 </div>
-                <input type="text" aria-label="First name" class="form-control" id="first-guest">
-                <input type="text" aria-label="Last name" class="form-control" id="second-guest">
+                <input type="text" class="form-control" name="first-guest">
+                <input type="text" class="form-control" name="second-guest">
             </div>
             <p></p>
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
                   <label class="input-group-text" for="top-40-selection">Would you like Top 40 hits mixed into your playlist?</label>
                 </div>
-                <select class="custom-select" id="inputGroupSelect01">
+                <select class="custom-select" name="top-40-selection">
                   <option selected>Choose...</option>
                   <option value="1">Yes</option>
                   <option value="2">No</option>
