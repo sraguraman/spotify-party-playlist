@@ -10,14 +10,12 @@ config = configparser.ConfigParser()
 config.read('config.cfg')
 client_id = config.get('SPOTIFY', 'CLIENT_ID')
 client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
+redirect_uri = config.get('SPOTIFY', 'REDIRECT_URI')
 
 auth = oauth2.SpotifyClientCredentials(
     client_id=client_id,
     client_secret=client_secret
 )
-
-token = auth.get_access_token()
-spotify = spotipy.Spotify(auth=token)
 
 @app.route('/')
 @app.route('/index')
@@ -34,6 +32,9 @@ def get_info():
     friend_two_username = request.form['second-guest-username']
     friend_two_playlist = request.form['second-guest-playlist']
     top_forty = request.form['top-40-selection']
+
+    token = util.prompt_for_user_token(user_username, 'playlist-modify-public', redirect_uri)
+    spotify = spotipy.Spotify(auth=token)
 
     # creating new playlist for user 
     playlist_description = "A playlist combining you and your friends' favorite music!"
