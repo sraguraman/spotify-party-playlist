@@ -1,4 +1,4 @@
-from flask import render_template, jsonify, request
+from flask import Flask,render_template, jsonify, request
 
 import spotipy 
 import spotipy.util as util 
