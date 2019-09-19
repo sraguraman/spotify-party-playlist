@@ -5,6 +5,8 @@ import spotipy.util as util
 import spotipy.oauth2 as oauth2
 import configparser
 
+app = Flask(__name__)
+
 config = configparser.ConfigParser()
 config.read('config.cfg')
 client_id = config.get('SPOTIFY', 'CLIENT_ID')
