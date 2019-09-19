@@ -1,4 +1,3 @@
-from app import app
 from flask import render_template, jsonify, request
 
 import spotipy 
@@ -75,7 +74,3 @@ def get_info():
         spotify.user_playlist_add_tracks(user_username, user_playlist_id, uris)
 
     return redirect('https://open.spotify.com/collections/playlists')
-    
-
-
-
