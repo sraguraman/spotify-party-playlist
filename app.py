@@ -25,7 +25,10 @@ config = configparser.ConfigParser()
 config.read('config.cfg')
 client_id = config.get('SPOTIFY', 'CLIENT_ID')
 client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
-redirect_uri = config.get('SPOTIFY', 'REDIRECT_URI')
+redirect_uri = "https://spotify-combined-playlist.herokuapp.com/callback/q"
+STATE = ""
+SHOW_DIALOG_bool = True
+SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
 
 auth = {
     "response_type": "code",
@@ -47,8 +50,8 @@ def callback():
         "grant_type": "authorization_code",
         "code": str(token),
         "redirect_uri": redirect_uri,
-        "client_id": client_id,
-        "client_secret": client_secret,
+        'client_id': client_id,
+        'client_secret': client_secret,
     }
     
     json_request = requests.post(SPOTIFY_TOKEN_URL, data=payload)
