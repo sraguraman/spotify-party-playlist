@@ -1,9 +1,14 @@
-from flask import Flask,render_template, jsonify, request
-
+from flask import Flask, render_template, jsonify, redirect, request
+from urllib.parse import quote
+from bottle import route, run, request
+import requests
+import json
 import spotipy 
 import spotipy.util as util 
 import spotipy.oauth2 as oauth2
 import configparser
+import operator
+import os
 
 #Spotify URLS
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -26,13 +31,12 @@ auth = {
     "response_type": "code",
     "redirect_uri": redirect_uri,
     "scope": SCOPE,
-    "client_id": client_id
+    "client_id": client_id,
 }
 
 @app.route('/')
-@app.route('/index')
 def index():
-    url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth_query_parameters.items()])
+    url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth.items()])
     auth_url = "{}/?{}".format(SPOTIFY_API_URL, url_args)
     return redirect(auth_url)
 
@@ -44,26 +48,27 @@ def callback():
         "code": str(token),
         "redirect_uri": redirect_uri,
         "client_id": client_id,
-        "client_secret": client_secret
+        "client_secret": client_secret,
     }
     
-    request = requests.post(SPOTIFY_TOKEN_URL, data=payload)
+    json_request = requests.post(SPOTIFY_TOKEN_URL, data=payload)
 
-    data = json.loads(request.text)
-    global access_token = data["access_token"]
-
-    global auth_header = {"Authorization": "Bearer {}".format(access_token)}
+    request_data = json.loads(json_request.text)
+    global access_token 
+    access_token = request_data["request.text"]
+    global auth_header 
+    auth_header = {"Authorization": "Bearer {}".format(access_token)}
     return render_template('index.html')
 
 @app.route("/#features", methods=['POST'])
 def data_wrangle():
     new_playlist_name = request.form['new-playlist']
     user_username = request.form['user-username']
-    user_playlist = request.form['user-playlist']
+    #user_playlist = request.form['user-playlist']
     friend_one_username = request.form['first-guest-username']
-    friend_one_playlist = request.form['first-guest-playlist']
+    #friend_one_playlist = request.form['first-guest-playlist']
     friend_two_username = request.form['second-guest-username']
-    friend_two_playlist = request.form['second-guest-playlist']
+    #friend_two_playlist = request.form['second-guest-playlist']
 
     usernames = []
     usernames.append(friend_one_username)
@@ -73,7 +78,7 @@ def data_wrangle():
     for username in usernames:
         current_playlist = requests.get('https://api.spotify.com/v1/users/' + str(username) + '/playlists', headers=auth_header)
         j_response = current_playlist.json()
-        for playlist in j_playlist['items']:
+        for playlist in j_response['items']:
             p_id = playlist['id']
             songs = requests.get('https://api.spotify.com/v1/users/' + str(username) + '/playlists/' + str(p_id) + '/tracks', headers=auth_header)
             song_data = songs.json()
@@ -87,11 +92,11 @@ def data_wrangle():
     songs = []
     num_songs = 0
 
-    for key,value in reverse:
+    for key in reverse:
         if num_songs < 100:
             song = requests.get('https://api.spotify.com/v1/tracks/' + key, headers=auth_header)
             song_json = song.json()
-            song_name = song_json['name']
+            #song_name = song_json['name']
             songs.append(key)
             num_songs += 1
         else:
