@@ -22,19 +22,20 @@ SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 SCOPE = "playlist-modify-private playlist-modify-public"
 
 config = configparser.ConfigParser()
+PORT = 8080
 config.read('config.cfg')
 client_id = config.get('SPOTIFY', 'CLIENT_ID')
 client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
 redirect_uri = "https://spotify-combined-playlist.herokuapp.com/callback/q"
 STATE = ""
-SHOW_DIALOG_bool = True
-SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
+#SHOW_DIALOG_bool = True
+#SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
 
 auth = {
     "response_type": "code",
     "redirect_uri": redirect_uri,
     "scope": SCOPE,
-    "client_id": client_id,
+    "client_id": client_id
 }
 
 @app.route('/')
@@ -58,7 +59,7 @@ def callback():
 
     request_data = json.loads(json_request.text)
     global access_token 
-    access_token = request_data["request.text"]
+    access_token = request_data["access_token"]
     global auth_header 
     auth_header = {"Authorization": "Bearer {}".format(access_token)}
     return render_template('index.html')
