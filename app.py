@@ -10,6 +10,8 @@ import configparser
 import operator
 import os
 
+app = Flask(__name__)
+
 #Spotify URLS
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
@@ -18,8 +20,6 @@ API_VERSION = "v1"
 SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 
 SCOPE = "playlist-modify-private playlist-modify-public"
-
-app = Flask(__name__)
 
 config = configparser.ConfigParser()
 config.read('config.cfg')
@@ -95,7 +95,7 @@ def data_wrangle():
     for key in reverse:
         if num_songs < 100:
             song = requests.get('https://api.spotify.com/v1/tracks/' + key, headers=auth_header)
-            song_json = song.json()
+            #song_json = song.json()
             #song_name = song_json['name']
             songs.append(key)
             num_songs += 1
