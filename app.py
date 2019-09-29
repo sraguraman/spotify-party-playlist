@@ -5,6 +5,15 @@ import spotipy.util as util
 import spotipy.oauth2 as oauth2
 import configparser
 
+#Spotify URLS
+SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
+SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
+SPOTIFY_API_BASE_URL = "https://api.spotify.com"
+API_VERSION = "v1"
+SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
+
+SCOPE = "playlist-modify-private playlist-modify-public"
+
 app = Flask(__name__)
 
 config = configparser.ConfigParser()
@@ -13,18 +22,41 @@ client_id = config.get('SPOTIFY', 'CLIENT_ID')
 client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
 redirect_uri = config.get('SPOTIFY', 'REDIRECT_URI')
 
-auth = oauth2.SpotifyClientCredentials(
-    client_id=client_id,
-    client_secret=client_secret
-)
+auth = {
+    "response_type": "code",
+    "redirect_uri": redirect_uri,
+    "scope": SCOPE,
+    "client_id": client_id
+}
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template("index.html")
+    url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth_query_parameters.items()])
+    auth_url = "{}/?{}".format(SPOTIFY_API_URL, url_args)
+    return redirect(auth_url)
 
-@app.route('/', methods=['POST'])
-def get_info():
+@app.route("/callback/q")
+def callback():
+    token = request.args['code']
+    payload = {
+        "grant_type": "authorization_code",
+        "code": str(token),
+        "redirect_uri": redirect_uri,
+        "client_id": client_id,
+        "client_secret": client_secret
+    }
+    
+    request = requests.post(SPOTIFY_TOKEN_URL, data=payload)
+
+    data = json.loads(request.text)
+    global access_token = data["access_token"]
+
+    global auth_header = {"Authorization": "Bearer {}".format(access_token)}
+    return render_template('index.html')
+
+@app.route("/#features", methods=['POST'])
+def data_wrangle():
     new_playlist_name = request.form['new-playlist']
     user_username = request.form['user-username']
     user_playlist = request.form['user-playlist']
@@ -32,47 +64,50 @@ def get_info():
     friend_one_playlist = request.form['first-guest-playlist']
     friend_two_username = request.form['second-guest-username']
     friend_two_playlist = request.form['second-guest-playlist']
-    top_forty = request.form['top-40-selection']
 
-    token = util.prompt_for_user_token(user_username, 'playlist-modify-public', redirect_uri)
-    spotify = spotipy.Spotify(auth=token)
+    usernames = []
+    usernames.append(friend_one_username)
+    usernames.append(friend_two_username)
 
-    # creating new playlist for user 
-    playlist_description = "A playlist combining you and your friends' favorite music!"
-    spotify.user_playlist_create(user_username, new_playlist_name, playlist_description)
+    all_songs = {}
+    for username in usernames:
+        current_playlist = requests.get('https://api.spotify.com/v1/users/' + str(username) + '/playlists', headers=auth_header)
+        j_response = current_playlist.json()
+        for playlist in j_playlist['items']:
+            p_id = playlist['id']
+            songs = requests.get('https://api.spotify.com/v1/users/' + str(username) + '/playlists/' + str(p_id) + '/tracks', headers=auth_header)
+            song_data = songs.json()
+            for song in song_data['items']:
+                if song["track"]["id"] in all_songs:
+                    all_songs[song["track"]["id"]] += 1
+                else:
+                    all_songs[song["track"]["id"]] = 1
+    
+    reverse = sorted(all_songs.items(), key=operator.itemgetter(1), reverse=True)
+    songs = []
+    num_songs = 0
 
-
-    # compiling songs from all users into one playlist
-    all_usernames_and_playlists = {}
-    all_usernames.append((user_username, user_playlist), (friend_one_username, friend_one_playlist), (friend_two_username, friend_two_playlist))
-    user_public_playlists = spotify.user_playlists(user_username)
-    for playlist in user_public_playlists:
-        if new_playlist_name == playlist['name']:
-            user_playlist_id = playlist["id"]
+    for key,value in reverse:
+        if num_songs < 100:
+            song = requests.get('https://api.spotify.com/v1/tracks/' + key, headers=auth_header)
+            song_json = song.json()
+            song_name = song_json['name']
+            songs.append(key)
+            num_songs += 1
+        else:
             break
 
-    for username, playlist_name in all_usernames_and_playlists.items:
-        all_public_playlists = spotify.user_playlists(username)
-        for playlist in all_public_playlists:
-            if playlist_name == playlist['name']:
-                current_playlist_id = playlist["id"]
-                break
-        results = spotify.user_playlist_tracks(username, current_playlist_id)
-        playlist_items = results['items']
-        uris = []
+    spotify = spotipy.Spotify(auth=access_token)
+    spotify.user_playlist_create(user_username, str(new_playlist_name))
 
-        while results['next']:
-            results = spotify.next(results)
-            playlist_items.append(results['items'])
-        
-        for item in playlist_items:
-            is_local = item["is_local"]
-            if is_local == True:
-                continue #skips if track is local
-            else:
-                track_uri = item["track"]["uri"]
-                uris.append(track_uri)
+    new_playlists = requests.get('https://api.spotify.com/v1/users/' + str(user_username) + '/playlists', headers=auth_header)
+    playlist_json = new_playlists.json()
 
-        spotify.user_playlist_add_tracks(user_username, user_playlist_id, uris)
+    for playlist in playlist_json['items']:
+        if playlist['name'] == new_playlist_name:
+            spotify.user_playlist_add_tracks(user_username, playlist["id"], all_songs)
 
-    return redirect('https://open.spotify.com/collections/playlists')
+    return redirect('https://open.spotify.com/collection/playlists')
+
+
+
