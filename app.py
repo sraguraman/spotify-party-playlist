@@ -38,6 +38,9 @@ auth_query_parameters = {
     "client_id": client_id
 }
 
+access_token = None
+auth_header = None
+
 @app.route("/")
 def index():
     url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth_query_parameters.items()])
