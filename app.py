@@ -31,13 +31,11 @@ STATE = ""
 SHOW_DIALOG_bool = True
 SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
 
-no_encoding_client_id = bytes(client_id, 'utf-8').decode('utf-8','ignore')
-
 auth_query_parameters = {
     "response_type": "code",
     "redirect_uri": redirect_uri,
     "scope": SCOPE,
-    "client_id": no_encoding_client_id
+    "client_id": client_id
 }
 
 @app.route("/")
