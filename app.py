@@ -46,7 +46,7 @@ def index():
 
 @app.route("/callback/q")
 def callback():
-    token = request.args['code']
+    token = request.args.get['code']
     payload = {
         "grant_type": "authorization_code",
         "code": str(token),
