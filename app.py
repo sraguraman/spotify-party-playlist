@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, redirect, request
 from urllib.parse import quote
-from bottle import route, run, request
+from bottle import route, run
 import requests
 import json
 import spotipy 
