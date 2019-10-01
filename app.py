@@ -98,7 +98,7 @@ def data_wrangle():
 
     for key in reverse:
         if num_songs < 100:
-            song = requests.get('https://api.spotify.com/v1/tracks/' + key, headers=auth_header)
+            song = requests.get('https://api.spotify.com/v1/tracks/' + str(key), headers=auth_header)
             #song_json = song.json()
             #song_name = song_json['name']
             songs.append(key)
