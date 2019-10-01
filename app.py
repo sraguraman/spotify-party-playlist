@@ -12,20 +12,20 @@ import os
 
 app = Flask(__name__)
 
+config = configparser.ConfigParser()
+config.read('config.cfg')
+client_id = config.get('SPOTIFY', 'CLIENT_ID')
+client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
+
 #Spotify URLS
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 SPOTIFY_API_BASE_URL = "https://api.spotify.com"
 API_VERSION = "v1"
 SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
+PORT = 8080
 
 SCOPE = "playlist-modify-private playlist-modify-public"
-
-config = configparser.ConfigParser()
-PORT = 8080
-config.read('config.cfg')
-client_id = config.get('SPOTIFY', 'CLIENT_ID')
-client_secret = config.get('SPOTIFY', 'CLIENT_SECRET')
 redirect_uri = "https://spotify-combined-playlist.herokuapp.com/callback/q"
 STATE = ""
 #SHOW_DIALOG_bool = True
@@ -38,10 +38,10 @@ auth = {
     "client_id": client_id
 }
 
-@app.route('/')
+@app.route("/")
 def index():
     url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth.items()])
-    auth_url = "{}/?{}".format(SPOTIFY_API_URL, url_args)
+    auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
     return redirect(auth_url)
 
 @app.route("/callback/q")
@@ -119,4 +119,5 @@ def data_wrangle():
     return redirect('https://open.spotify.com/collection/playlists')
 
 
-
+if __name__ == "__main__":
+    app.run(debug=True, port=PORT)
