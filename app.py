@@ -60,7 +60,7 @@ def callback():
     request_data = json.loads(json_request.text)
     global access_token 
     access_token = request_data["access_token"]
-    global auth_header 
+    global auth_header
     auth_header = {"Authorization": "Bearer {}".format(access_token)}
     return render_template('index.html')
 
