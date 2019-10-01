@@ -114,7 +114,7 @@ def data_wrangle():
 
     for playlist in playlist_json['items']:
         if playlist['name'] == new_playlist_name:
-            spotify.user_playlist_add_tracks(user_username, playlist["id"], all_songs)
+            spotify.user_playlist_add_tracks(user_username, playlist['id'], all_songs)
 
     return redirect('https://open.spotify.com/collection/playlists')
 
