@@ -106,7 +106,8 @@ def data_wrangle():
         else:
             break
 
-    spotify = spotipy.Spotify(auth=access_token)
+    token = util.prompt_for_user_token(user_username,SCOPE,client_id,client_secret,redirect_uri)
+    spotify = spotipy.Spotify(auth=token)
     spotify.user_playlist_create(user_username, str(new_playlist_name))
 
     new_playlists = requests.get('https://api.spotify.com/v1/users/' + str(user_username) + '/playlists', headers=auth_header)
