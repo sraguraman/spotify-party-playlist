@@ -26,25 +26,27 @@ SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 PORT = 8080
 
 SCOPE = "playlist-modify-private playlist-modify-public"
-redirect_uri = "https://spotify-combined-playlist.herokuapp.com/callback/q"
+redirect_uri = "https://spotify-combined-playlist.herokuapp.com/callback/q/"
 STATE = ""
-#SHOW_DIALOG_bool = True
-#SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
+SHOW_DIALOG_bool = True
+SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
 
-auth = {
+no_encoding_client_id = bytes(client_id, 'utf-8').decode('utf-8','ignore')
+
+auth_query_parameters = {
     "response_type": "code",
     "redirect_uri": redirect_uri,
     "scope": SCOPE,
-    "client_id": client_id
+    "client_id": no_encoding_client_id
 }
 
 @app.route("/")
 def index():
-    url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth.items()])
+    url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth_query_parameters.items()])
     auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
     return redirect(auth_url)
 
-@app.route("/callback/q")
+@app.route("/callback/q/")
 def callback():
     token = request.args['code']
     payload = {
